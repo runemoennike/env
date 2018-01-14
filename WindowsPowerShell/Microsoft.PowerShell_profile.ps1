@@ -1,7 +1,7 @@
 # Change encoding to support special characters in Source Code Pro font (doesn't seem to work.)
 [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
 
-# Set colours.
+# Set colours. Source: https://github.com/neilpa/cmd-colors-solarized
 . (Join-Path -Path (Split-Path -Parent -Path $PROFILE) -ChildPath $(switch($HOST.UI.RawUI.BackgroundColor.ToString()){'White'{'Set-SolarizedLightColorDefaults.ps1'}'Black'{'Set-SolarizedDarkColorDefaults.ps1'}default{return}}))
 
 # Shortcuts to working directories.
