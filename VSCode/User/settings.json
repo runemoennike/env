@@ -1,0 +1,30 @@
+{
+    "workbench.colorTheme": "Solarized Light",
+    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "editor.fontFamily": "Fira Code Retina",
+    "editor.fontLigatures": true,
+    "editor.smoothScrolling": true,
+    "editor.minimap.enabled": false,
+    "explorer.autoReveal": false,
+    "editor.wordWrap": "on",
+    "emmet.triggerExpansionOnTab": true,
+    "eslint.enable": true,
+    "eslint.alwaysShowStatus": true,
+    "eslint.autoFixOnSave": true,
+    "eslint.options": {
+        "extensions": [ 
+            ".js",
+            ".vue"
+        ],
+        "eslint.validate": [
+            {
+                "language": "vue",
+                "autoFix": true
+            },
+            {
+                "language": "javascript",
+                "autoFix": true
+            }
+        ]
+    }
+}
