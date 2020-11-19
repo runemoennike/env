@@ -1,0 +1,65 @@
+language en_US.utf8
+
+set nocompatible
+
+set clipboard=unnamed
+
+set termguicolors
+set background=light
+colors solarized8_high
+
+filetype plugin on
+syntax on
+
+set smartcase
+set number relativenumber
+
+let mapleader=","
+exec 'source ' . fnamemodify($MYVIMRC, ':p:h') . '/remaps.vim'
+noremap <F9> :bprevious<CR>
+noremap <F10> :bnext<CR>
+
+call plug#begin('~/.vim/plugged')
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'iCyMind/NeoSolarized'
+Plug 'reedes/vim-pencil'
+Plug 'kana/vim-textobj-user'
+Plug 'reedes/vim-textobj-sentence'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'vimwiki/vimwiki'
+Plug 'jlanzarotta/bufexplorer'
+call plug#end()
+
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#statusline#enabled = 1
+let g:airline_theme='base16'
+let g:airline_powerline_fonts = 1
+
+let wiki_notes = {}
+let wiki_notes.path = '~\OneDrive - FORCE Technology\Notes'
+
+let g:vimwiki_list = [wiki_notes]
+
+:hi VimwikiHeader1 guifg=#268bd2 gui=bold
+:hi VimwikiHeader2 guifg=#859900 gui=bold
+:hi VimwikiHeader3 guifg=#2aa198 gui=bold
+:hi VimwikiHeader4 guifg=#6c71c4 gui=bold
+:hi VimwikiHeader5 guifg=#d33682 gui=bold
+:hi VimwikiHeader6 guifg=#b58900 gui=bold
+
+" Let's save undo info!
+if !isdirectory($HOME."/.vim")
+    call mkdir($HOME."/.vim", "", 0770)
+endif
+if !isdirectory($HOME."/.vim/undo-dir")
+    call mkdir($HOME."/.vim/undo-dir", "", 0700)
+endif
+set undodir=~/.vim/undo-dir
+set undofile
+
+augroup pencil
+  autocmd!
+"  autocmd FileType markdown,mkd,md,text,txt call pencil#init({'wrap': 'hard', 'autoformat': 0})
+augroup END
