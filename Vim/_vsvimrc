@@ -1,10 +1,9 @@
-source ~/remaps.vim
+source c:\rune\env\vim\remaps.vim
 
 set clipboard=unnamed
 set ignorecase
 set smartcase
 set number
-set relativenumber
 
 let mapleader=","
 
@@ -43,6 +42,10 @@ nnoremap gh :vsc Edit.QuickInfo<cr>
 
 " open the change parameter window, a bit fake because it's not a text-object
 nnoremap cia :vsc Refactor.ReorderParameters<cr>
+
+" tabs
+nnoremap <leader>t :vsc Window.KeepTabOpen<cr>
+nnoremap <leader>T :vsc Window.PinTab<cr>
 
 
 

@@ -6,13 +6,20 @@ set clipboard=unnamed
 
 set termguicolors
 set background=light
-colors solarized8_high
+
+set expandtab
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
 
 filetype plugin on
 syntax on
 
-set smartcase
-set number relativenumber
+set ignorecase
+set number
+set hidden
+
+set incsearch
 
 let mapleader=","
 exec 'source ' . fnamemodify($MYVIMRC, ':p:h') . '/remaps.vim'
@@ -30,7 +37,11 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'vimwiki/vimwiki'
 Plug 'jlanzarotta/bufexplorer'
+Plug 'PProvost/vim-ps1'
+Plug 'stephpy/vim-yaml'
 call plug#end()
+
+colors NeoSolarized
 
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#statusline#enabled = 1
