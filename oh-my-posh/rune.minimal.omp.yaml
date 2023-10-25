@@ -6,6 +6,12 @@ blocks:
   newline: false
   segments:
   - foreground: blue
+    style: plain
+    properties:
+      always_enabled: true
+    type: text
+    template: "PS "
+  - foreground: blue
     properties:
       style: full
     style: plain
@@ -23,11 +29,11 @@ blocks:
 - alignment: left
   newline: false
   segments:
-  - foreground: foreground
+  - foreground: black
     properties:
       always_enabled: true
     style: plain
-    template: "{{ if gt .Code 0 }}<red>(🛑 {{ .Code }}) </>{{ end }} >"
+    template: "{{ if gt .Code 0 }}<red>(🛑 {{ .Code }}) </>{{ end }}>"
     type: status
   type: prompt
 console_title_template: "PS {{.Folder}}"
