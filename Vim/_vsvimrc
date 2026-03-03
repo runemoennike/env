@@ -28,6 +28,7 @@ nnoremap <leader>c :vsc Edit.ToggleLineComment<cr>
 vnoremap <leader>c :vsc Edit.ToggleLineComment<cr>
 nnoremap <leader>C :vsc Edit.ToggleBlockComment<cr>
 vnoremap <leader>C :vsc Edit.ToggleBlockComment<cr>
+nnoremap <leader>u :vsc EditorContextMenus.CodeWindow.RemoveAndSort<cr>
 
 " jumps
 nnoremap <C-o> :vsc View.NavigateBackward<cr>
@@ -46,6 +47,12 @@ nnoremap cia :vsc Refactor.ReorderParameters<cr>
 " tabs
 nnoremap <leader>t :vsc Window.KeepTabOpen<cr>
 nnoremap <leader>T :vsc Window.PinTab<cr>
+nnoremap <leader>w :vsc Window.MovetoNextTabGroup<cr>
+nnoremap <leader>W :vsc Window.MovetoPreviousTabGroup<cr>
 
+" completion
+nnoremap <leader>p :vsc Edit.Copilot.TriggerInlineSuggestion<cr>
+inoremap <C-p> <C-o>:vsc Edit.Copilot.TriggerInlineSuggestion<cr>
 
+set incsearch
 

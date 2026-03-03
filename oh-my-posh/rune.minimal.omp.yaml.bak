@@ -1,23 +1,21 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
 
-console_title_template: PS {{.Folder}}
+$schema: https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json
 blocks:
-- type: prompt
-  alignment: left
+- alignment: left
+  newline: false
   segments:
-  - properties:
-      always_enabled: true
+  - foreground: blue
     style: plain
-    template: "PS "
-    foreground: lightBlue
-    background: ""
+    properties:
+      always_enabled: true
     type: text
-  - properties:
+    template: "PS "
+  - foreground: blue
+    properties:
       style: full
     style: plain
     template: "{{ .Path }} "
-    foreground: lightCyan
-    background: ""
     type: path
   - properties:
       branch_icon: ""
@@ -26,17 +24,18 @@ blocks:
       fetch_worktree_count: true
     style: plain
     template: "({{ if or (.Working.Changed) (.Staging.Changed) (gt .StashCount 0) }}<magenta>{{ .HEAD }}</>{{ else }}<green>{{ .HEAD }}</>{{ end }}{{ if (gt .Ahead 0)}}<cyan>{{ .BranchStatus }}</>{{ end }}{{ if (gt .Behind 0)}}<cyan>{{ .BranchStatus }}</>{{ end }}{{ if .Staging.Changed }} <green>{{ .Staging.String }}</>{{ end }}{{ if .Working.Changed }} <red>{{ .Working.String }}</>{{ end }}) "
-    foreground: ""
-    background: ""
     type: git
-- type: prompt
-  alignment: left
+  type: prompt
+- alignment: left
+  newline: false
   segments:
-  - properties:
+  - foreground: black
+    properties:
       always_enabled: true
     style: plain
     template: "{{ if gt .Code 0 }}<red>(🛑 {{ .Code }}) </>{{ end }}>"
-    foreground: white
-    background: ""
     type: status
-version: 3
+  type: prompt
+console_title_template: "PS {{.Folder}}"
+version: 2.0
+

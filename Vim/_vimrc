@@ -25,6 +25,10 @@ let mapleader=","
 exec 'source ' . fnamemodify($MYVIMRC, ':p:h') . '/remaps.vim'
 noremap <F9> :bprevious<CR>
 noremap <F10> :bnext<CR>
+nnoremap <leader>n :NERDTreeFocus<CR>
+nnoremap <C-n> :NERDTree<CR>
+nnoremap <C-t> :NERDTreeToggle<CR>
+nnoremap <C-f> :NERDTreeFind<CR>
 
 call plug#begin('~/.vim/plugged')
 Plug 'vim-airline/vim-airline'
@@ -35,10 +39,10 @@ Plug 'kana/vim-textobj-user'
 Plug 'reedes/vim-textobj-sentence'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'vimwiki/vimwiki'
 Plug 'jlanzarotta/bufexplorer'
 Plug 'PProvost/vim-ps1'
 Plug 'stephpy/vim-yaml'
+Plug 'preservim/nerdtree'
 call plug#end()
 
 colors NeoSolarized
