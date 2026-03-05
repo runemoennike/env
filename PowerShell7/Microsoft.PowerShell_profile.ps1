@@ -31,7 +31,10 @@ function prompt {
         return (& $function:prompt)
     }
 
-    if ($script:OhMyPoshLoaded) { return }
+    if ($script:OhMyPoshLoaded) {
+        # Delegate to oh-my-posh's prompt function (handles venv wrappers correctly)
+        return (& (Get-Module -Name "oh-my-posh-core").ExportedCommands["prompt"].ScriptBlock)
+    }
 
     $prompt = "`e[94mPS`e[0m `e[96m$currentPath`e[0m "
     if ($realExitCode -ne 0 -and $null -ne $realExitCode) {
