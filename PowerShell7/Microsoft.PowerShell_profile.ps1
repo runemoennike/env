@@ -71,7 +71,7 @@ function prompt
 
                 $prompt += "`e[95m`u{1F33F}$branch "
                 if ($ahead -gt 0) { $prompt += "`e[34m`u{2197}$ahead " } 
-                if ($behind -gt 0) { $prompt += "`e[34m`u{2197}$behind " } 
+                if ($behind -gt 0) { $prompt += "`e[34m`u{2199}$behind " } 
                 if ($stagedAdded -gt 0) { $prompt += "`e[92m`e[1m`u{002B}`e[0m$stagedAdded " } 
                 if ($stagedModified -gt 0) { $prompt += "`e[92m`u{270E}$stagedModified " } 
                 if ($stagedDeleted -gt 0) { $prompt += "`e[92m`u{2718}$stagedDeleted " } 
@@ -90,7 +90,7 @@ function prompt
         $global:LASTEXITCODE = $realExitCode
 
         # Return with final caret and text reset.
-        return "$prompt`u{25B7} `e[0m"
+        return "$prompt`e[0m`u{25B7} `e[0m"
 }
 
 # -----------------------------------------------------------------------------
@@ -98,7 +98,9 @@ function prompt
 # -----------------------------------------------------------------------------
 # Set-Alias -Name vim -Value "neovide"
 function vim
-{ neovide --wsl $args 
+{ 
+    # neovide --wsl $args 
+    neovide $args
 }
 Set-Alias -Name cd -Value Push-LocationAndSetTitle -Option AllScope
 Set-Alias -Name cd- -Value Pop-LocationAndSetTitle -Option AllScope

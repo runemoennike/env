@@ -5,7 +5,7 @@ set ignorecase
 set smartcase
 set number
 
-let mapleader=","
+let mapleader=" "
 
 " break out of the tyranny of text! Navigate by method
 nnoremap ] :vsc Edit.NextMethod<cr>
@@ -24,22 +24,23 @@ nnoremap <leader>R :vsc TestExplorer.DebugAllTestsInContext<cr>
 
 " formatting
 nnoremap <leader>f :vsc Edit.FormatDocument<cr>
-nnoremap <leader>c :vsc Edit.ToggleLineComment<cr>
-vnoremap <leader>c :vsc Edit.ToggleLineComment<cr>
-nnoremap <leader>C :vsc Edit.ToggleBlockComment<cr>
-vnoremap <leader>C :vsc Edit.ToggleBlockComment<cr>
+nnoremap gc :vsc Edit.ToggleLineComment<cr>
+vnoremap gc :vsc Edit.ToggleLineComment<cr>
+nnoremap gC :vsc Edit.ToggleBlockComment<cr>
+vnoremap gC :vsc Edit.ToggleBlockComment<cr>
 nnoremap <leader>u :vsc EditorContextMenus.CodeWindow.RemoveAndSort<cr>
 
 " jumps
 nnoremap <C-o> :vsc View.NavigateBackward<cr>
 nnoremap <C-i> :vsc View.NavigateForward<cr>
-nnoremap gi :vsc Edit.GoToImplementation<cr>
-nnoremap gr :vsc Edit.FindAllReferences<cr>
-nnoremap gp :vsc Edit.PeekDefinition<cr>
+nnoremap grd :vsc Edit.GoToDefinition<cr>
+nnoremap gri :vsc Edit.GoToImplementation<cr>
+nnoremap grr :vsc Edit.FindAllReferences<cr>
+nnoremap grp :vsc Edit.PeekDefinition<cr>
 
 " Information
-nnoremap gj :vsc Edit.ParameterInfo<cr>
-nnoremap gh :vsc Edit.QuickInfo<cr>
+nnoremap grk :vsc Edit.ParameterInfo<cr>
+nnoremap grh :vsc Edit.QuickInfo<cr>
 
 " open the change parameter window, a bit fake because it's not a text-object
 nnoremap cia :vsc Refactor.ReorderParameters<cr>
