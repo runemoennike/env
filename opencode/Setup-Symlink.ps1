@@ -14,7 +14,8 @@ $ErrorActionPreference = "Stop"
 
 $oldPath    = Join-Path $env:USERPROFILE ".config\opencode"
 $backupPath = Join-Path $env:USERPROFILE ".config\opencode.bak"
-$newPath    = "C:\rune\env\opencode"
+$newPath    = if ([string]::IsNullOrWhiteSpace($PSScriptRoot)) { "C:\rune\env\opencode" } else { $PSScriptRoot }
+$didBackup  = $false
 
 Write-Host "opencode Config Symlink Setup" -ForegroundColor Cyan
 Write-Host "=============================" -ForegroundColor Cyan
@@ -27,9 +28,9 @@ if (-not (Test-Path -LiteralPath $newPath)) {
 }
 
 # Already a junction to our target?
-$item = Get-Item -LiteralPath $oldPath -Force -ErrorAction SilentlyContinue
-if ($item -and $item.LinkType -eq 'Junction') {
-    $target = @($item.Target)[0]
+$existing = Get-Item -LiteralPath $oldPath -Force -ErrorAction SilentlyContinue
+if ($existing -and $existing.LinkType -eq 'Junction') {
+    $target = @($existing.Target)[0]
     if ($target -and ([IO.Path]::GetFullPath($target).TrimEnd('\') -ieq [IO.Path]::GetFullPath($newPath).TrimEnd('\'))) {
         Write-Host "Junction already exists at: $oldPath" -ForegroundColor Green
         Write-Host "Pointing to: $target" -ForegroundColor Green
@@ -39,7 +40,7 @@ if ($item -and $item.LinkType -eq 'Junction') {
 
 # Step 1: back up existing directory (if present)
 Write-Host "Step 1: Backing up existing config directory..." -ForegroundColor Yellow
-if (Test-Path -LiteralPath $oldPath) {
+if ($existing) {
     if (Test-Path -LiteralPath $backupPath) {
         Write-Host "  ERROR: Backup already exists: $backupPath" -ForegroundColor Red
         Write-Host "  Remove or rename it, then re-run." -ForegroundColor Yellow
@@ -47,6 +48,7 @@ if (Test-Path -LiteralPath $oldPath) {
     }
     try {
         Rename-Item -LiteralPath $oldPath -NewName "opencode.bak" -Force
+        $didBackup = $true
         Write-Host "  Renamed to: $backupPath" -ForegroundColor Green
     }
     catch {
@@ -62,9 +64,41 @@ else {
 
 # Step 2: create the junction
 Write-Host "Step 2: Creating directory junction..." -ForegroundColor Yellow
-cmd /c mklink /J "$oldPath" "$newPath" | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "  ERROR: Could not create junction (exit $LASTEXITCODE)" -ForegroundColor Red
+$mklinkFailed = $false
+$mklinkExitCode = 0
+try {
+    cmd /c mklink /J "$oldPath" "$newPath" | Out-Null
+    $mklinkExitCode = $LASTEXITCODE
+    if ($mklinkExitCode -ne 0) {
+        $mklinkFailed = $true
+    }
+}
+catch {
+    $mklinkFailed = $true
+    $mklinkExitCode = $LASTEXITCODE
+}
+
+if ($mklinkFailed) {
+    if ($mklinkExitCode -ne 0) {
+        Write-Host "  ERROR: Could not create junction (exit $mklinkExitCode)" -ForegroundColor Red
+    }
+    else {
+        Write-Host "  ERROR: Could not create junction" -ForegroundColor Red
+    }
+
+    if ($didBackup) {
+        Write-Host "  Attempting to restore original config..." -ForegroundColor Yellow
+        try {
+            Rename-Item -LiteralPath $backupPath -NewName "opencode" -Force
+            Write-Host "  Original config restored. Nothing was changed." -ForegroundColor Yellow
+        }
+        catch {
+            Write-Host "  ERROR: Could not restore original config automatically." -ForegroundColor Red
+            Write-Host "  Rename this folder back to 'opencode' to restore:" -ForegroundColor Yellow
+            Write-Host "  $backupPath" -ForegroundColor White
+        }
+    }
+
     exit 1
 }
 Write-Host "  Junction created successfully!" -ForegroundColor Green
