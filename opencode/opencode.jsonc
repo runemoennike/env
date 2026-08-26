@@ -1,0 +1,230 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // ---------------------------------------------------------------------------
+  // Multi-agent setup: architect -> (researcher | coder -> reviewer)
+  //
+  //   architect   claude-opus-4.8   primary, default. Plans and orchestrates.
+  //   researcher  gpt-5.4-mini      only agent IN THIS SET with internet access.
+  //   coder       gpt-5.3-codex     Implements approved plans. Edits files.
+  //   reviewer    claude-opus-5     Independent review. Read-only.
+  //
+  // System prompts live in ./prompts/*.md next to this file.
+  //
+  // This config touches exactly one thing outside these four agents: the model
+  // pin on built-in `explore` (see its block at the bottom for why). There is
+  // no top-level `permission` block, and build/plan/general/scout are left
+  // entirely at their defaults.
+  // ---------------------------------------------------------------------------
+
+  "default_agent": "architect",
+
+  // Required by this setup: the default of 1 would stop `coder` (itself a
+  // subagent) from consulting `researcher`. 2 allows exactly one more level.
+  "subagent_depth": 2,
+
+  "agent": {
+    // -------------------------------------------------------------------------
+    // ARCHITECT - primary, the agent you talk to
+    // -------------------------------------------------------------------------
+    "architect": {
+      "mode": "primary",
+      "description": "Turns feature requests and change requests into an approved, executable plan, then orchestrates the researcher, coder and reviewer subagents.",
+      "model": "github-copilot/claude-opus-4.8",
+      "prompt": "{file:./prompts/architect.md}",
+      "color": "primary",
+      "permission": {
+        // Plans only. Implementation is delegated to `coder`.
+        "edit": "deny",
+
+        // Read-only git is free; any other shell command is denied so it never
+        // prompts. The architect inspects with the read/glob/grep/list tools and
+        // delegates command execution to explore/coder.
+        // Last matching rule wins, so "*" goes first.
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "git branch*": "allow",
+          "git blame*": "allow",
+          "git rev-parse*": "allow",
+          "git merge-base*": "allow",
+          "git ls-files*": "allow"
+        },
+
+        // Web access belongs to `researcher` alone within this set.
+        "webfetch": "deny",
+        "websearch": "deny",
+
+        // The three specialists, plus built-in `explore` for codebase search.
+        "task": {
+          "*": "deny",
+          "explore": "allow",
+          "researcher": "allow",
+          "coder": "allow",
+          "reviewer": "allow"
+        },
+
+        // Needed for the plan-approval gate.
+        "question": "allow",
+        "todowrite": "allow"
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // RESEARCHER - the only agent in this set with web access
+    // -------------------------------------------------------------------------
+    //
+    // `websearch` only exists as a tool when opencode is launched with
+    // OPENCODE_ENABLE_EXA=1 (set at User scope). Without it `webfetch` still
+    // works, so the researcher degrades to retrieval-only rather than breaking.
+    // -------------------------------------------------------------------------
+    "researcher": {
+      "mode": "subagent",
+      "description": "Fetches current API specifications, library documentation, release notes and version details from the internet. Use it when a question cannot be answered from the local repository. Returns a cited brief; does not write code and cannot read local files.",
+      "model": "github-copilot/gpt-5.4-mini",
+      "prompt": "{file:./prompts/researcher.md}",
+      "color": "info",
+      "permission": {
+        "webfetch": "allow",
+        "websearch": "allow",
+
+        // External retrieval only. Local context is supplied by the architect
+        // in the task prompt. Without these denies the researcher would inherit
+        // the permissive defaults and could crawl the repo, contradicting its
+        // own prompt and duplicating the job `explore` is there to do.
+        "read": "deny",
+        "grep": "deny",
+        "glob": "deny",
+        "list": "deny",
+
+        "edit": "deny",
+        "bash": "deny",
+        "task": "deny",
+        "question": "deny"
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // CODER - implements approved plans
+    //
+    // NOTE ON TEMPERATURE: gpt-5.3-codex reports `temperature: false` on
+    // models.dev, i.e. the parameter is not accepted. Setting it risks a 400
+    // from the provider rather than producing determinism. `reasoningEffort`
+    // below is the equivalent control surface for this model family.
+    // -------------------------------------------------------------------------
+    "coder": {
+      "mode": "all",
+      "description": "Implements an approved plan: edits files, runs builds and tests. Does not decide scope or design. Give it the full plan, file paths and acceptance criteria, since it starts with no context.",
+      "model": "github-copilot/gpt-5.3-codex",
+      "prompt": "{file:./prompts/coder.md}",
+      "reasoningEffort": "high",
+      "color": "success",
+      "permission": {
+        "edit": "allow",
+
+        // Broad rules first, narrow rules last - last match wins.
+        "bash": {
+          "*": "ask",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "dotnet build*": "allow",
+          "dotnet test*": "allow",
+          "dotnet restore*": "allow",
+          "npm run*": "allow",
+          "npm test*": "allow",
+          "npm ci*": "allow",
+          "pnpm*": "allow",
+          "cargo build*": "allow",
+          "cargo test*": "allow",
+          "go build*": "allow",
+          "go test*": "allow",
+          "pytest*": "allow",
+          "git push*": "deny",
+          "git reset --hard*": "deny",
+          "git clean*": "deny",
+          "rm -rf*": "deny",
+          "Remove-Item*": "ask"
+        },
+
+        // Needs docs? Go through `researcher`.
+        "webfetch": "deny",
+        "websearch": "deny",
+
+        "task": {
+          "*": "deny",
+          "explore": "allow",
+          "researcher": "allow"
+        },
+
+        // Subagents have todowrite off by default; useful for multi-step work.
+        "todowrite": "allow",
+
+        // Only the architect talks to the user.
+        "question": "deny"
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // REVIEWER - independent second opinion, read-only
+    // -------------------------------------------------------------------------
+    "reviewer": {
+      "mode": "subagent",
+      "description": "Performs an independent critical review of code that was just written, using a different model family from the implementer. Reads the git diff and reports findings graded Blocking / Should-fix / Nit. Read-only; never edits.",
+      "model": "github-copilot/claude-opus-5",
+      "prompt": "{file:./prompts/reviewer.md}",
+      "color": "warning",
+      "permission": {
+        "edit": "deny",
+
+        // Reading is already the default; stated explicitly because a reviewer
+        // that cannot open the files it is reviewing would be useless, and the
+        // surrounding denies make that non-obvious at a glance.
+        "read": "allow",
+        "grep": "allow",
+        "glob": "allow",
+        "list": "allow",
+
+        // Read-only git so it can inspect the diff itself.
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow",
+          "git show*": "allow",
+          "git blame*": "allow",
+          "git rev-parse*": "allow",
+          "git merge-base*": "allow"
+        },
+
+        "webfetch": "deny",
+        "websearch": "deny",
+
+        "task": "deny",
+        "question": "deny"
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // EXPLORE - built-in subagent, model pin only
+    //
+    // The ONLY built-in this config touches, and only its model. Built-in
+    // subagents inherit the model of whichever agent invoked them, so an
+    // unpinned `explore` would run on Opus 4.8 when the architect calls it.
+    // Exploration is high-churn grep/glob/read work, which is exactly the
+    // wrong load for the priciest model (~6x the per-token rate of the pin).
+    //
+    // Everything else about `explore` - prompt, permissions, mode - is left at
+    // the built-in default. `general` is deliberately NOT pinned: architect and
+    // coder both deny `task: "*"` and allow only named specialists, so nothing
+    // in this setup can invoke it.
+    // -------------------------------------------------------------------------
+    "explore": {
+      "model": "github-copilot/gpt-5.4-mini"
+    }
+  }
+}
