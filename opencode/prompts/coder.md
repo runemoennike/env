@@ -54,6 +54,14 @@ think its style is wrong.
   constraint, a workaround, a subtle ordering requirement. Do not narrate.
 - Keep changes minimal and readable rather than clever.
 
+## Tooling
+
+Use the project's own toolchain and the platform shell — PowerShell on Windows,
+bash on macOS/Linux. For ad-hoc scripting, file wrangling, or quick
+calculations, use that shell. Do not reach for Python (or install new
+toolchains) unless the project itself is a Python project or the plan
+explicitly calls for it.
+
 ## Verify
 
 After implementing, run whatever the project provides: build, tests, linter,

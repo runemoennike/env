@@ -11,10 +11,12 @@
   //
   // System prompts live in ./prompts/*.md next to this file.
   //
-  // This config touches exactly one thing outside these four agents: the model
-  // pin on built-in `explore` (see its block at the bottom for why). There is
-  // no top-level `permission` block, and build/plan/general/scout are left
-  // entirely at their defaults.
+  // Beyond these four agents, this config makes two global touches: it pins the
+  // model on built-in `explore` (see its block at the bottom), and it adds a
+  // top-level `permission` floor (just below) that denies remote-affecting and
+  // destructive git commands for EVERY agent. The floor matters because opencode
+  // defaults an unset `bash` permission to "allow" - so the built-in build /
+  // plan / general / explore agents would otherwise run `git push` silently.
   // ---------------------------------------------------------------------------
 
   "default_agent": "architect",
@@ -22,6 +24,32 @@
   // Required by this setup: the default of 1 would stop `coder` (itself a
   // subagent) from consulting `researcher`. 2 allows exactly one more level.
   "subagent_depth": 2,
+
+  // ---------------------------------------------------------------------------
+  // GLOBAL PERMISSION FLOOR
+  //
+  // Applies to every agent, including the built-in build/plan/general/explore
+  // that this config does not otherwise lock down. opencode defaults an unset
+  // `bash` permission to "allow", so without this floor those agents would run
+  // `git push` with no prompt. The four custom agents below already deny these,
+  // so in practice this only changes the built-ins. Per-agent rules layer on top
+  // and can override; the last matching rule wins.
+  //
+  // Each command is denied in two forms, because opencode matches against the
+  // whole command string: the plain `git push*`, plus `git -* push*` to also
+  // catch global-option prefixes like `git -C <path> push` and `git -c k=v push`
+  // that were used to bypass the plain rule.
+  // ---------------------------------------------------------------------------
+  "permission": {
+    "bash": {
+      "git push*": "deny",
+      "git -* push*": "deny",
+      "git reset*--hard*": "deny",
+      "git -*reset*--hard*": "deny",
+      "git clean*": "deny",
+      "git -* clean*": "deny"
+    }
+  },
 
   "agent": {
     // -------------------------------------------------------------------------
@@ -128,10 +156,8 @@
         // Broad rules first, narrow rules last - last match wins.
         "bash": {
           "*": "ask",
-          "git status*": "allow",
-          "git diff*": "allow",
-          "git log*": "allow",
-          "git show*": "allow",
+
+          // Build/test tooling the coder runs without prompting.
           "dotnet build*": "allow",
           "dotnet test*": "allow",
           "dotnet restore*": "allow",
@@ -144,9 +170,64 @@
           "go build*": "allow",
           "go test*": "allow",
           "pytest*": "allow",
+
+          // Read-only code search.
+          "rg *": "allow",
+          // Read-only PowerShell investigation. The bash tool runs pwsh on this
+          // machine; opencode evaluates each piped/chained segment separately, so a
+          // destructive stage (e.g. `| Remove-Item`) still hits its own ask/deny
+          // rule. Script-block cmdlets (ForEach-Object / Where-Object) are omitted
+          // on purpose. Matching is literal string/glob, so an unlisted cmdlet or
+          // alias simply falls through to "*": "ask" rather than being allowed.
+          "Get-ChildItem*": "allow",
+          "Get-Content*": "allow",
+          "Get-Item*": "allow",
+          "Get-Member*": "allow",
+          "Test-Path*": "allow",
+          "Select-String*": "allow",
+          "Measure-Object*": "allow",
+          "Select-Object*": "allow",
+          "Sort-Object*": "allow",
+          "Group-Object*": "allow",
+          "Get-Unique*": "allow",
+          "Compare-Object*": "allow",
+          "Format-Table*": "allow",
+          "Format-List*": "allow",
+          "Format-Wide*": "allow",
+          "Out-String*": "allow",
+          "Resolve-Path*": "allow",
+          "Split-Path*": "allow",
+          "Join-Path*": "allow",
+          "Get-Location*": "allow",
+          "ConvertFrom-Json*": "allow",
+          "ConvertTo-Json*": "allow",
+          "Get-Command*": "allow",
+          "Get-Help*": "allow",
+          "Get-Module*": "allow",
+          "Get-Alias*": "allow",
+          "ls*": "allow",
+          "cat*": "allow",
+          "pwd*": "allow",
+
+          // Git: allow the whole toolset for local work, then step up to a
+          // prompt for history-rewriting commands, and deny outright the
+          // operations that reach the remote or destroy uncommitted work. Each
+          // dangerous command is denied twice - the plain form and a `git -* ...`
+          // form - so that global-option prefixes like `git -C <path> push` and
+          // `git -c k=v push` cannot slip past the plain rule.
+          // Ordered broad -> narrow because the last matching rule wins.
+          "git *": "allow",
+          "git rebase*": "ask",
+          "git filter-branch*": "ask",
+          "git filter-repo*": "ask",
+          "git commit --amend*": "ask",
           "git push*": "deny",
-          "git reset --hard*": "deny",
+          "git -* push*": "deny",
+          "git reset*--hard*": "deny",
+          "git -*reset*--hard*": "deny",
           "git clean*": "deny",
+          "git -* clean*": "deny",
+
           "rm -rf*": "deny",
           "Remove-Item*": "ask"
         },
@@ -210,21 +291,34 @@
     },
 
     // -------------------------------------------------------------------------
-    // EXPLORE - built-in subagent, model pin only
+    // EXPLORE - built-in subagent: model pin + git safety denies
     //
-    // The ONLY built-in this config touches, and only its model. Built-in
-    // subagents inherit the model of whichever agent invoked them, so an
-    // unpinned `explore` would run on Opus 4.8 when the architect calls it.
-    // Exploration is high-churn grep/glob/read work, which is exactly the
-    // wrong load for the priciest model (~6x the per-token rate of the pin).
+    // Built-in subagents inherit the model of whichever agent invoked them, so
+    // an unpinned `explore` would run on Opus 4.8 when the architect calls it.
+    // Exploration is high-churn grep/glob/read work, which is exactly the wrong
+    // load for the priciest model (~6x the per-token rate of the pin).
     //
-    // Everything else about `explore` - prompt, permissions, mode - is left at
-    // the built-in default. `general` is deliberately NOT pinned: architect and
-    // coder both deny `task: "*"` and allow only named specialists, so nothing
-    // in this setup can invoke it.
+    // explore is ALSO the one built-in the architect (and coder) can reach via
+    // `task`, and its bash otherwise sits at the permissive default - which made
+    // it a silent back door for `git push`. The global floor above already
+    // covers it; the explicit denies here are belt-and-suspenders so the block
+    // holds regardless of how the floor merges with built-in defaults. Its
+    // prompt and mode are otherwise left at the built-in default. `general` is
+    // deliberately NOT pinned: architect and coder both deny `task: "*"` and
+    // allow only named specialists, so nothing in this setup can invoke it.
     // -------------------------------------------------------------------------
     "explore": {
-      "model": "github-copilot/gpt-5.4-mini"
+      "model": "github-copilot/gpt-5.4-mini",
+      "permission": {
+        "bash": {
+          "git push*": "deny",
+          "git -* push*": "deny",
+          "git reset*--hard*": "deny",
+          "git -*reset*--hard*": "deny",
+          "git clean*": "deny",
+          "git -* clean*": "deny"
+        }
+      }
     }
   }
 }
