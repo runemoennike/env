@@ -4,10 +4,10 @@
   // ---------------------------------------------------------------------------
   // Multi-agent setup: architect -> (researcher | coder -> reviewer)
   //
-  //   architect   claude-opus-4.8   primary, default. Plans and orchestrates.
+  //   architect   claude-opus-5.5   primary, default. Plans and orchestrates.
   //   researcher  gpt-5.4-mini      only agent IN THIS SET with internet access.
   //   coder       gpt-5.3-codex     Implements approved plans. Edits files.
-  //   reviewer    claude-opus-5     Independent review. Read-only.
+  //   reviewer    claude-opus-5.5   Independent review. Read-only.
   //
   // System prompts live in ./prompts/*.md next to this file.
   //
@@ -58,7 +58,7 @@
     "architect": {
       "mode": "primary",
       "description": "Turns feature requests and change requests into an approved, executable plan, then orchestrates the researcher, coder and reviewer subagents.",
-      "model": "github-copilot/claude-opus-4.8",
+      "model": "github-copilot/claude-opus-5.5",
       "prompt": "{file:./prompts/architect.md}",
       "color": "primary",
       "permission": {
@@ -256,7 +256,7 @@
     "reviewer": {
       "mode": "subagent",
       "description": "Performs an independent critical review of code that was just written, using a different model family from the implementer. Reads the git diff and reports findings graded Blocking / Should-fix / Nit. Read-only; never edits.",
-      "model": "github-copilot/claude-opus-5",
+      "model": "github-copilot/claude-opus-5.5",
       "prompt": "{file:./prompts/reviewer.md}",
       "color": "warning",
       "permission": {
@@ -294,9 +294,9 @@
     // EXPLORE - built-in subagent: model pin + git safety denies
     //
     // Built-in subagents inherit the model of whichever agent invoked them, so
-    // an unpinned `explore` would run on Opus 4.8 when the architect calls it.
+    // an unpinned `explore` would run on Opus 5.5 when the architect calls it.
     // Exploration is high-churn grep/glob/read work, which is exactly the wrong
-    // load for the priciest model (~6x the per-token rate of the pin).
+    // load for the priciest model in this setup.
     //
     // explore is ALSO the one built-in the architect (and coder) can reach via
     // `task`, and its bash otherwise sits at the permissive default - which made
