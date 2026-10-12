@@ -5,7 +5,7 @@
   // Multi-agent setup: architect -> (researcher | coder -> reviewer)
   //
   //   architect   claude-opus-5.5   primary, default. Plans and orchestrates.
-  //   researcher  gpt-5.4-mini      only agent IN THIS SET with internet access.
+  //   researcher  claude-haiku-5.5  only agent IN THIS SET with internet access.
   //   coder       gpt-5.3-codex     Implements approved plans. Edits files.
   //   reviewer    claude-opus-5.5   Independent review. Read-only.
   //
@@ -112,7 +112,7 @@
     "researcher": {
       "mode": "subagent",
       "description": "Fetches current API specifications, library documentation, release notes and version details from the internet. Use it when a question cannot be answered from the local repository. Returns a cited brief; does not write code and cannot read local files.",
-      "model": "github-copilot/gpt-5.4-mini",
+      "model": "github-copilot/claude-haiku-5.5",
       "prompt": "{file:./prompts/researcher.md}",
       "color": "info",
       "permission": {
@@ -308,7 +308,7 @@
     // allow only named specialists, so nothing in this setup can invoke it.
     // -------------------------------------------------------------------------
     "explore": {
-      "model": "github-copilot/gpt-5.4-mini",
+      "model": "github-copilot/claude-haiku-5.5",
       "permission": {
         "bash": {
           "git push*": "deny",
