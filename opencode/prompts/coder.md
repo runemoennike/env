@@ -62,6 +62,13 @@ calculations, use that shell. Do not reach for Python (or install new
 toolchains) unless the project itself is a Python project or the plan
 explicitly calls for it.
 
+Use the read/grep/glob tools rather than shell commands to read and search files.
+Prefer short, single-purpose commands: they match the user's allow-list and run
+without prompting. Multi-statement scripts (variable assignments, `& { }` blocks,
+Start-Process, inline reflection) always require the user's manual approval, so
+use them only when nothing simpler works. Run formatters and tools by bare name
+(e.g. `stylua file.lua`), rather than via `& "full\path.cmd"`, when they are on PATH.
+
 ## Verify
 
 After implementing, run whatever the project provides: build, tests, linter,

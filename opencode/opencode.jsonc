@@ -11,12 +11,13 @@
   //
   // System prompts live in ./prompts/*.md next to this file.
   //
-  // Beyond these four agents, this config makes two global touches: it pins the
+  // Beyond these four agents, this config makes three global touches: it pins the
   // model on built-in `explore` (see its block at the bottom), and it adds a
   // top-level `permission` floor (just below) that denies remote-affecting and
   // destructive git commands for EVERY agent. The floor matters because opencode
   // defaults an unset `bash` permission to "allow" - so the built-in build /
-  // plan / general / explore agents would otherwise run `git push` silently.
+  // plan / general / explore agents would otherwise run `git push` silently. It
+  // also adds top-level external_directory allows for selected paths.
   // ---------------------------------------------------------------------------
 
   "default_agent": "architect",
@@ -45,6 +46,17 @@
   // that were used to bypass the plain rule.
   // ---------------------------------------------------------------------------
   "permission": {
+    // Allows derived from permission-audit log, Nov 2026; apply to all tools,
+    // including edits. Unlisted paths retain opencode's defaults and built-in allows.
+    "external_directory": {
+      "C:/tools/neovim/**": "allow",
+      "C:/Program Files/Neovim/**": "allow",
+      "~/AppData/Local/nvim-data/**": "allow",
+      "~/.nuget/packages/**": "allow",
+      "D:/PackageCaches/**": "allow",
+      "~/AppData/Local/Temp/opencode/**": "allow",
+      "~/AppData/Local/Temp/OfficeAddins.log.txt": "allow"
+    },
     "bash": {
       "git push*": "deny",
       "git -* push*": "deny",
@@ -75,6 +87,37 @@
         // Last matching rule wins, so "*" goes first.
         "bash": {
           "*": "deny",
+          // Read-only investigation derived from permission-audit log, Nov 2026.
+          "Get-ChildItem*": "allow",
+          "Get-Content*": "allow",
+          "Get-Item*": "allow",
+          "Get-Member*": "allow",
+          "Test-Path*": "allow",
+          "Select-String*": "allow",
+          "Measure-Object*": "allow",
+          "Select-Object*": "allow",
+          "Sort-Object*": "allow",
+          "Group-Object*": "allow",
+          "Get-Unique*": "allow",
+          "Compare-Object*": "allow",
+          "Format-Table*": "allow",
+          "Format-List*": "allow",
+          "Format-Wide*": "allow",
+          "Out-String*": "allow",
+          "Resolve-Path*": "allow",
+          "Split-Path*": "allow",
+          "Join-Path*": "allow",
+          "Get-Location*": "allow",
+          "ConvertFrom-Json*": "allow",
+          "ConvertTo-Json*": "allow",
+          "Get-Command*": "allow",
+          "Get-Help*": "allow",
+          "Get-Module*": "allow",
+          "Get-Alias*": "allow",
+          "ls*": "allow",
+          "cat*": "allow",
+          "pwd*": "allow",
+          "rg *": "allow",
           "git status*": "allow",
           "git diff*": "allow",
           "git log*": "allow",
@@ -213,6 +256,31 @@
           "cat*": "allow",
           "pwd*": "allow",
 
+          // Additional tooling derived from permission-audit log, Nov 2026.
+          "npm view*": "allow",
+          "npm ls*": "allow",
+          "npm --version*": "allow",
+          "npm install": "allow",
+          "npx office-addin-manifest": "allow",
+          "npx office-addin-manifest *": "allow",
+          "dotnet nuget locals*": "allow",
+          "dotnet --info*": "allow",
+          "dotnet --list-sdks*": "allow",
+          "node --version*": "allow",
+          "python --version*": "allow",
+          "go version*": "allow",
+          "nvim --version*": "allow",
+          "luac -v": "allow",
+          "tokei --version*": "allow",
+          "where.exe *": "allow",
+          "Get-Process*": "allow",
+          "Get-NetTCPConnection*": "allow",
+          "netstat -ano*": "allow",
+          "Get-FileHash*": "allow",
+          "Get-CimInstance*": "allow",
+          "tar -tf *": "allow",
+          "stylua*": "allow",
+
           // Git: allow the whole toolset for local work, then step up to a
           // prompt for history-rewriting commands, and deny outright the
           // operations that reach the remote or destroy uncommitted work. Each
@@ -274,9 +342,43 @@
         "glob": "allow",
         "list": "allow",
 
-        // Read-only git so it can inspect the diff itself.
+        // Read-only git, PowerShell and rg for inspection, plus dotnet build/test.
         "bash": {
           "*": "deny",
+          // Read-only investigation derived from permission-audit log, Nov 2026.
+          "Get-ChildItem*": "allow",
+          "Get-Content*": "allow",
+          "Get-Item*": "allow",
+          "Get-Member*": "allow",
+          "Test-Path*": "allow",
+          "Select-String*": "allow",
+          "Measure-Object*": "allow",
+          "Select-Object*": "allow",
+          "Sort-Object*": "allow",
+          "Group-Object*": "allow",
+          "Get-Unique*": "allow",
+          "Compare-Object*": "allow",
+          "Format-Table*": "allow",
+          "Format-List*": "allow",
+          "Format-Wide*": "allow",
+          "Out-String*": "allow",
+          "Resolve-Path*": "allow",
+          "Split-Path*": "allow",
+          "Join-Path*": "allow",
+          "Get-Location*": "allow",
+          "ConvertFrom-Json*": "allow",
+          "ConvertTo-Json*": "allow",
+          "Get-Command*": "allow",
+          "Get-Help*": "allow",
+          "Get-Module*": "allow",
+          "Get-Alias*": "allow",
+          "ls*": "allow",
+          "cat*": "allow",
+          "pwd*": "allow",
+          "rg *": "allow",
+          // Build and test derived from permission-audit log, Nov 2026.
+          "dotnet build*": "allow",
+          "dotnet test*": "allow",
           "git status*": "allow",
           "git diff*": "allow",
           "git log*": "allow",
