@@ -26,10 +26,6 @@
   // subagent) from consulting `researcher`. 2 allows exactly one more level.
   "subagent_depth": 2,
 
-  // Permission-audit logger plugin; registered explicitly because this is the
-  // config root (not a project .opencode/ plugin auto-discovery folder).
-  "plugin": ["./plugins/permission-audit.ts"],
-
   // ---------------------------------------------------------------------------
   // GLOBAL PERMISSION FLOOR
   //
