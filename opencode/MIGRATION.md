@@ -8,6 +8,14 @@ to prevent v1 auto-discovery. To re-enable it in v1 only, rename it back to
 
 `experimental.todo: true` enables todos for all agents, including researcher and reviewer (whose todowrite was off in v1); this is intentional and harmless.
 
+## Status after switch (v2.3.2, 2026-11-18)
+
+The switch is done; the v1 backup is `opencode.v1.jsonc`.
+
+- Verified: `{file:}` expands in agent system prompts; the coder `#medium` variant is active; depth-2 subagent nesting works; `git push` is denied for coder and build; external-directory ask/allow behaviour and PowerShell per-segment splitting work; `todowrite`, `webfetch`, and Exa websearch work (websearch works without `EXA_API_KEY`).
+- Denied tools are hidden from agents rather than denied per call; researcher has no `read` tool. The v2-only tools `execute` and `experimental_image_generate` are denied for read-only agents (architect retains `execute`).
+- `service.json` contains a password and is gitignored.
+
 ## Switch and rollback
 
 1. Copy `opencode.jsonc` to `opencode.v1.jsonc` before upgrading. Keep the v1 backup.
@@ -26,10 +34,7 @@ to prevent v1 auto-discovery. To re-enable it in v1 only, rename it back to
 
 ## Unverified items and fallbacks
 
-- Check that `{file:}` expands in agent `system` values and the actual prompts are loaded. If not, convert to Markdown agent files in `agents/` with each prompt as the file body.
-- Check that `github-copilot/gpt-6.1-terra#medium` is available and the configured medium reasoning variant is used. If not, inspect the v2 provider catalog and use a supported model/variant with equivalent reasoning settings.
-- Check how the v2 PowerShell scanner splits piped and chained commands before relying on broad allow patterns. If unsafe, tighten shell permissions to ask or deny until safe rules are established.
-- Check prompt references to `task`, `todowrite`, and `question` against v2 tool names. If they differ, update `prompts/*.md` after migration.
+- Check prompt references to `question` against v2 tool names. `todowrite` is verified, and there are no `task` references in the prompts.
 - The v1 audit plugin does not run in v2. If audit logging is wanted, rewrite it for v2 using `Plugin.define` and verify it independently.
 - `@opencode-ai/plugin` in `package.json` and the `Setup-Symlink.ps1` node_modules note are unused while the audit plugin is parked and by v2 without a ported plugin. If a plugin is later enabled or added, revisit its dependency and setup needs.
 - V2 subagents always run in the background (2.3.0). Check orchestration and completion handling; if this disrupts the workflow, adjust prompts and orchestration to wait for results.

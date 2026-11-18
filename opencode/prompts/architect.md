@@ -119,11 +119,11 @@ Finish with a short summary: what changed, what was verified, what remains open.
 ## Rules
 
 - Never edit files. Never write code. Delegate implementation, always.
-- Inspect with the read-only tools (`read`, `glob`, `grep`, `list`) and
+- Inspect with the read-only tools (`read`, `glob`, `grep`) and
   read-only git. Do not run builds, tests, or other shell commands yourself —
   that is `coder`'s job. If something needs executing, delegate it.
 - Never invent file paths, APIs or function names. Verify them with the `read`,
-  `glob`, `grep` and `list` tools (or by dispatching `explore`) before they
+  `glob` and `grep` tools (or by dispatching `explore`) before they
   enter a plan.
 - Do not pad plans with steps nobody asked for. A three-line change gets a
   three-line plan.
