@@ -6,7 +6,7 @@
   //
   //   architect   claude-opus-5.5   primary, default. Plans and orchestrates.
   //   researcher  claude-haiku-5.5  only agent IN THIS SET with internet access.
-  //   coder       gpt-5.3-codex     Implements approved plans. Edits files.
+  //   coder       gpt-6.1-terra     Implements approved plans. Edits files.
   //   reviewer    claude-opus-5.5   Independent review. Read-only.
   //
   // System prompts live in ./prompts/*.md next to this file.
@@ -24,6 +24,10 @@
   // Required by this setup: the default of 1 would stop `coder` (itself a
   // subagent) from consulting `researcher`. 2 allows exactly one more level.
   "subagent_depth": 2,
+
+  // Permission-audit logger plugin; registered explicitly because this is the
+  // config root (not a project .opencode/ plugin auto-discovery folder).
+  "plugin": ["./plugins/permission-audit.ts"],
 
   // ---------------------------------------------------------------------------
   // GLOBAL PERMISSION FLOOR
@@ -138,17 +142,17 @@
     // -------------------------------------------------------------------------
     // CODER - implements approved plans
     //
-    // NOTE ON TEMPERATURE: gpt-5.3-codex reports `temperature: false` on
-    // models.dev, i.e. the parameter is not accepted. Setting it risks a 400
-    // from the provider rather than producing determinism. `reasoningEffort`
-    // below is the equivalent control surface for this model family.
+    // NOTE ON TEMPERATURE: For gpt-6.1-terra we deliberately do not set a
+    // `temperature` parameter. OpenAI reasoning models generally do not accept
+    // it; `reasoningEffort` is the control surface used here, with `medium`
+    // chosen for faster implementation loops.
     // -------------------------------------------------------------------------
     "coder": {
       "mode": "all",
       "description": "Implements an approved plan: edits files, runs builds and tests. Does not decide scope or design. Give it the full plan, file paths and acceptance criteria, since it starts with no context.",
-      "model": "github-copilot/gpt-5.3-codex",
+      "model": "github-copilot/gpt-6.1-terra",
       "prompt": "{file:./prompts/coder.md}",
-      "reasoningEffort": "high",
+      "reasoningEffort": "medium",
       "color": "success",
       "permission": {
         "edit": "allow",
